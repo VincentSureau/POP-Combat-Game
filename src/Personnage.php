@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Stat;
+
 class Personnage
 {
     private $name;
@@ -9,12 +11,22 @@ class Personnage
     private $armor = 0;
     private $atk = 0;
 
-    public function __construct(string $name, int $life, int $atk = 0, int $armor = 0)
+    public function __construct(Stat $stat)
     {
-        $this->name = $name;
-        $this->life = $life;
-        $this->atk = $atk;
-        $this->armor = $armor;
+        $this->name = $stat->getName();
+        $this->life = $stat->getLife();
+        $this->atk = $stat->getAtk();
+        $this->armor = $stat->getArmor();
+    }
+
+    public function bonus()
+    {
+        $bonus = rand(1,6) > 4;
+        if(!$bonus) {
+            return false;
+        }
+        echo $this->name . ' reçoit un bonus de vie !<br>';
+        $this->life += 20;
     }
 
     /**
@@ -62,7 +74,11 @@ class Personnage
      */ 
     public function getArmor()
     {
-        return $this->armor;
+        if($this->name !== "Hero") {
+            return $this->armor;
+        }
+        $bonus = rand(1,6) > 4 ? 20 : 0;
+        return $this->armor + $bonus;
     }
 
     /**
@@ -95,5 +111,21 @@ class Personnage
         $this->atk = $atk;
 
         return $this;
+    }
+
+    public function attack(Personnage $target)
+    {
+        if($target->getLife() == 0 || $this->getLife() == 0) {
+            return;
+        }
+        echo $this->name . ' attaque ' . $target->getName() . '<br>';
+        echo 'Vie de la cible avant l\'attaque : ' . $target->getLife() . '<br>';
+        $damages = max($this->atk - $target->getArmor(), 0);
+        echo $target->getName() . ' reçoit ' . $damages . ' dégats<br>';
+        $target->setLife(max($target->getLife() - $damages, 0));
+        echo 'Vie de la cible après l\'attaque : ' . $target->getLife() . '<br>';
+        if($target->getLife() == 0) {
+            echo $target->getName() . ' est mort';
+        }
     }
 }
